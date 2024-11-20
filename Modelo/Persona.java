@@ -1,5 +1,6 @@
 package proyectof.Model;
-
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 public class Persona {
     private int id; // Atributo para el ID
     private String nombre;
@@ -13,6 +14,7 @@ public class Persona {
     public Persona(String nombre, int edad, String correo, String contraseña, String rol, Integer idCuadrilla) {
         validarEdad(edad);
         validarRol(rol);
+        validarCorreo(correo);
         this.nombre = nombre;
         this.edad = edad;
         this.correo = correo;
@@ -31,6 +33,15 @@ public class Persona {
     private void validarRol(String rol) {
         if (!rol.equals("admin") && !rol.equals("jefe") && !rol.equals("empleado")) {
             throw new IllegalArgumentException("El rol debe ser 'admin', 'jefe' o 'empleado'.");
+        }
+    }
+    
+    private void validarCorreo(String correo) {
+        String regex = "^[A-Za-z0-9+_.-]+@(.+)$";  // Expresión regular para validar correo
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(correo);
+        if (!matcher.matches()) {
+            throw new IllegalArgumentException("El correo no tiene un formato válido.");
         }
     }
 
