@@ -1,4 +1,5 @@
 package proyectof.View;
+import proyectof.Conn.MainConn;
 
 public class MainView extends javax.swing.JFrame {
 
@@ -66,17 +67,13 @@ public class MainView extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void BTN_SalirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BTN_SalirActionPerformed
-        // Cerrar todas las ventanas abiertas
-    for (java.awt.Window window : java.awt.Window.getWindows()) {
-        window.dispose();
-    }
-    
-    // Finalizar el programa
-    System.exit(0);
+MainConn controlador = new MainConn();
+controlador.salir(this);
     }//GEN-LAST:event_BTN_SalirActionPerformed
 
     private void BTN_IniciarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BTN_IniciarActionPerformed
-        // TODO add your handling code here:
+        MainConn controlador = new MainConn();
+        controlador.iniciar(this);
     }//GEN-LAST:event_BTN_IniciarActionPerformed
 
     /**
