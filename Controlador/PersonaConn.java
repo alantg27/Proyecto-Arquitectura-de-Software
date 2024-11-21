@@ -3,7 +3,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
 import javax.swing.JComboBox;
 import proyectof.Model.*;
 import proyectof.View.*;
@@ -22,39 +21,38 @@ public class PersonaConn {
     // Limpia la CB_Cuadrilla antes de cargar nuevos elementos
     CB_Cuadrilla.removeAllItems();
 
+    // Primero, agrega la opción "Crear sin asignar cuadrilla" si es necesario
+    if (rolSeleccionado.equals("Jefe de Cuadrilla")) {
+        CB_Cuadrilla.addItem("Sin asignar cuadrilla");
+    } else if (rolSeleccionado.equals("Empleado")) {
+        CB_Cuadrilla.addItem("Sin asignar cuadrilla");
+    }
+
     // Dependiendo del rol, realiza la consulta correspondiente
     if (rolSeleccionado.equals("Administrador")) {
         // Para Admin, se agrega un ítem indicando que no se puede asignar cuadrilla
         CB_Cuadrilla.addItem("No se puede asignar");
     } else if (rolSeleccionado.equals("Jefe de Cuadrilla")) {
+        // Obtener cuadrillas disponibles para Jefe de Cuadrilla
         obtenerCuadrillas("Jefe de Cuadrilla", CB_Cuadrilla, conexion);
     } else if (rolSeleccionado.equals("Empleado")) {
+        // Obtener todas las cuadrillas para Empleado
         obtenerCuadrillas("Empleado", CB_Cuadrilla, conexion);
     }
 }
 
-
-    public void obtenerCuadrillas(String rol, JComboBox<String> comboBox, Connection conexion) {
-    // Limpiar el JComboBox antes de agregar nuevos elementos
-    comboBox.removeAllItems();
-
-    // Si el rol es Admin, no se agregan elementos, solo se muestra la opción "No se puede asignar"
-    if (rol.equals("Administrador")) {
-        comboBox.addItem("No se puede asignar");
-    } else {
-        // Realizar consulta específica dependiendo del rol
-        if (rol.equals("Jefe de Cuadrilla")) {
-            // Consulta para obtener cuadrillas donde la IDCuadrilla no está asignada a ninguna persona
-            realizarConsulta("SELECT IdCuadrilla FROM cuadrillasdisponibles", comboBox, conexion);
-        } else if (rol.equals("Empleado")) {
-            // Consulta para obtener todas las cuadrillas
-            realizarConsulta("SELECT IdCuadrilla FROM cuadrillas", comboBox, conexion);
-        }
+public void obtenerCuadrillas(String rol, JComboBox<String> comboBox, Connection conexion) {
+    // Realizar consulta específica dependiendo del rol
+    if (rol.equals("Jefe de Cuadrilla")) {
+        // Consulta para obtener cuadrillas donde la IDCuadrilla no está asignada a ninguna persona
+        realizarConsulta("SELECT IdCuadrilla FROM cuadrillasdisponibles", comboBox, conexion);
+    } else if (rol.equals("Empleado")) {
+        // Consulta para obtener todas las cuadrillas
+        realizarConsulta("SELECT IdCuadrilla FROM cuadrillas", comboBox, conexion);
     }
 }
 
-
-    public void realizarConsulta(String sql, JComboBox<String> comboBox, Connection conexion) {
+public void realizarConsulta(String sql, JComboBox<String> comboBox, Connection conexion) {
     try (PreparedStatement stmt = conexion.prepareStatement(sql);
          ResultSet rs = stmt.executeQuery()) {
 
@@ -67,6 +65,8 @@ public class PersonaConn {
         e.printStackTrace();
     }
 }
+
+
     
     public void insertar(PersonaView vista) {
     // Obtener los valores de los campos utilizando los métodos getter
@@ -75,23 +75,14 @@ public class PersonaConn {
     String correo = vista.getTXT_Correo().getText();
     String contraseña = vista.getTXT_Contraseña().getText();
     String rol = (String) vista.getCB_Rol().getSelectedItem();
-    
-    // Obtener el valor de CB_Cuadrilla como Integer
+
+    // Inicializar idCuadrilla como null
     Integer idCuadrilla = null;
-    String cuadrillaSeleccionada = (String) vista.getCB_Cuadrilla().getSelectedItem();
-    if (cuadrillaSeleccionada != null && !cuadrillaSeleccionada.equals("Seleccione una cuadrilla")) {
-        try {
-            idCuadrilla = Integer.parseInt(cuadrillaSeleccionada);
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(vista, "La ID de Cuadrilla debe ser un número válido.", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-    }
 
     // Validar los campos antes de intentar la inserción
     if (nombre.isEmpty() || edadStr.isEmpty() || correo.isEmpty() || contraseña.isEmpty() || rol == null) {
         // Mostrar mensaje de error si algún campo está vacío
-        JOptionPane.showMessageDialog(vista, "Todos los campos deben ser completos.", "Error", JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(vista, "Todos los campos deben estar completos.", "Error", JOptionPane.ERROR_MESSAGE);
         return;
     }
 
@@ -104,10 +95,26 @@ public class PersonaConn {
         return;
     }
 
+    // Si el rol no es Administrador, obtener y validar la cuadrilla seleccionada
+    if (!rol.equals("Administrador")) {
+        String cuadrillaSeleccionada = (String) vista.getCB_Cuadrilla().getSelectedItem();
+        
+        // Permitir que se elija "sin asignar cuadrilla"
+        if (cuadrillaSeleccionada != null && !cuadrillaSeleccionada.equals("Seleccione una cuadrilla") &&
+                !cuadrillaSeleccionada.equals("Sin asignar cuadrilla")) {
+            try {
+                idCuadrilla = Integer.parseInt(cuadrillaSeleccionada);
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(vista, "La ID de Cuadrilla debe ser un número válido.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+        }
+    }
+
     // Llamar a la fábrica adecuada según el rol seleccionado
     Persona persona = null;
     if (rol.equals("Administrador")) {
-        persona = new AdminFactory().crearPersona(nombre, edad, correo, contraseña, idCuadrilla);
+        persona = new AdminFactory().crearPersona(nombre, edad, correo, contraseña, null);
     } else if (rol.equals("Jefe de Cuadrilla")) {
         persona = new JefeFactory().crearPersona(nombre, edad, correo, contraseña, idCuadrilla);
     } else if (rol.equals("Empleado")) {
@@ -126,6 +133,8 @@ public class PersonaConn {
         }
     }
 }
+
+
 
     public void consultarPorId(PersonaView vista) {
     // Obtener el ID de la persona desde el campo de texto de la vista
@@ -162,20 +171,20 @@ public class PersonaConn {
     vista.getTXT_Contraseña().setText(persona.getContraseña());
 
     // Actualizar el ComboBox de Rol
-    String rol = persona.getRol();
+    int rol = persona.getRol();
     switch (rol) {
-        case "admin":
+        case 1:
             vista.getCB_Rol().setSelectedIndex(1); // Admin
             vista.getCB_Cuadrilla().setEnabled(true); // Habilitar combo box de cuadrillas
             vista.getCB_Cuadrilla().removeAllItems();
             vista.getCB_Cuadrilla().addItem("No se puede asignar");
             break;
-        case "jefe":
+        case 2:
             vista.getCB_Rol().setSelectedIndex(2); // Jefe de Cuadrilla
             actualizarCuadrilla("Jefe de Cuadrilla", vista.getCB_Cuadrilla(), ConexionBD.conectar());
             vista.getCB_Cuadrilla().setEnabled(true); // Habilitar combo box
             break;
-        case "empleado":
+        case 3:
             vista.getCB_Rol().setSelectedIndex(3); // Empleado
             actualizarCuadrilla("Empleado", vista.getCB_Cuadrilla(), ConexionBD.conectar());
             vista.getCB_Cuadrilla().setEnabled(true); // Habilitar combo box
@@ -188,7 +197,7 @@ public class PersonaConn {
     // Actualizar el ComboBox de Cuadrilla
 Integer idCuadrilla = persona.getIdCuadrilla();
 
-if (rol.equals("admin")) {
+if (rol==1) {
     // Si es admin, la combo box debe deshabilitarse y mostrar "No se puede asignar"
     vista.getCB_Cuadrilla().setEnabled(true);
     vista.getCB_Cuadrilla().removeAllItems();
@@ -198,7 +207,7 @@ if (rol.equals("admin")) {
     vista.getCB_Cuadrilla().setEnabled(true);
     vista.getCB_Cuadrilla().removeAllItems();
 
-    if (rol.equals("jefe")) {
+    if (rol==2) {
         // Si el rol es Jefe de Cuadrilla
         if (idCuadrilla != null) {
             // Agregar la cuadrilla asignada al JComboBox
@@ -206,7 +215,7 @@ if (rol.equals("admin")) {
         }
         // Cargar cuadrillas disponibles sin jefe
         realizarConsulta("SELECT IdCuadrilla FROM cuadrillasdisponibles", vista.getCB_Cuadrilla(), ConexionBD.conectar());
-    } else if (rol.equals("empleado")) {
+    } else if (rol==3) {
         // Si el rol es Empleado, cargar todas las cuadrillas
         realizarConsulta("SELECT IdCuadrilla FROM cuadrillas", vista.getCB_Cuadrilla(), ConexionBD.conectar());
     }
@@ -312,16 +321,16 @@ if (rol.equals("admin")) {
     }
 
     // Asignar el valor del rol según el índice seleccionado en el ComboBox
-    String rol = "";
+    int rol = 0;
     switch (selectedIndex) {
         case 1:
-            rol = "admin"; // Index 1 = Admin
+            rol = 1; // Index 1 = Admin
             break;
         case 2:
-            rol = "jefe"; // Index 2 = Jefe de Cuadrilla
+            rol = 2; // Index 2 = Jefe de Cuadrilla
             break;
         case 3:
-            rol = "empleado"; // Index 3 = Empleado
+            rol = 3; // Index 3 = Empleado
             break;
         default:
             JOptionPane.showMessageDialog(vista, "Debe seleccionar un rol válido.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -334,12 +343,14 @@ if (rol.equals("admin")) {
         return;
     }
 
-    // Convertir idCuadrilla a Integer si no es nulo, o asignar null si el rol es "admin"
+    // Validar idCuadrilla y asignar null si es inválido
     Integer idCuadrilla = null;
-    if (rol.equals("admin")) {
-        idCuadrilla = null; // No asignar cuadrilla si es Admin
-    } else if (idCuadrillaStr != null && !idCuadrillaStr.isEmpty()) {
-        idCuadrilla = Integer.parseInt(idCuadrillaStr); // Solo asignar cuadrilla si no es Admin
+    try {
+        if (idCuadrillaStr != null && !idCuadrillaStr.isEmpty()) {
+            idCuadrilla = Integer.parseInt(idCuadrillaStr); // Convertir a Integer si es válido
+        }
+    } catch (NumberFormatException e) {
+        idCuadrilla = null; // Si es inválido, asignar null
     }
 
     // Crear el objeto persona con los nuevos valores
@@ -347,7 +358,7 @@ if (rol.equals("admin")) {
     persona.setId(idPersona); // Establecer el ID de la persona
 
     // Si el rol es "admin" y tiene cuadrilla asignada, eliminar la cuadrilla
-    if (rol.equals("admin") && idCuadrilla != null) {
+    if (rol == 1 && idCuadrilla != null) {
         try {
             // Eliminar la cuadrilla asociada si tiene una
             dao.eliminarCuadrilla(idCuadrilla);
@@ -380,6 +391,7 @@ if (rol.equals("admin")) {
         }
     }
 }
+
 
 
 

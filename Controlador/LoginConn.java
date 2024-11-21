@@ -11,11 +11,11 @@ public class LoginConn {
     Object[] resultado = login.validarCredenciales(correo, contraseña); // Validar las credenciales
 
     boolean esValido = (boolean) resultado[0];  // El primer valor es si es válido
-    String rol = (String) resultado[1];        // El segundo valor es el rol
+    int rol = (int) resultado[1];        // El segundo valor es el rol
 
     if (esValido) {
         // Verificar el rol y abrir la vista correspondiente
-        if ("admin".equals(rol)) {
+        if (Login.obtenerRol()==1) {
             // Crear e ir a la vista AdminView
             AdminView adminView = new AdminView();
             adminView.setVisible(true);  // Mostrar la vista AdminView
