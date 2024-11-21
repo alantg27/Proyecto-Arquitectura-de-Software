@@ -54,8 +54,11 @@ class ChartPanel extends JPanel {
         loadData();
     }
 
+    private Connection conn;
+    
     private void loadData() {
-        try (Connection conn = ConexionDB.getConnection()) {
+        try {
+            conn = ConexionDB.getConnection();
             String query = "SELECT IdCuadrilla, COUNT(*) AS numActividades FROM registroactividades GROUP BY IdCuadrilla";
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(query);

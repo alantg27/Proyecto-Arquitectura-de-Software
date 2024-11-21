@@ -42,11 +42,14 @@ public class DashboardIntegrantesCuadrillas extends JFrame {
         add(panel);
     }
 
+    private Connection conn;
+    
     private JTable createTable() {
         String[] columns = {"Cuadrilla", "Integrante", "Rol"};
         DefaultTableModel model = new DefaultTableModel(columns, 0);
 
-        try (Connection conn = ConexionDB.getConnection()) {
+        try {
+            conn = ConexionDB.getConnection();
             String sql = "SELECT c.IdCuadrilla, p.Nombre, r.NombreRol "
                        + "FROM cuadrillas c "
                        + "JOIN personas p ON c.IdCuadrilla = p.IdCuadrilla "

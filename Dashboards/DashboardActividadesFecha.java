@@ -57,8 +57,11 @@ public class DashboardActividadesFecha extends JFrame {
             loadData();
         }
 
+        private Connection conn;
+        
         private void loadData() {
-            try (Connection conn = ConexionDB.getConnection()) {
+            try {
+                conn = ConexionDB.getConnection();
                 // Modifica esta consulta para obtener el número de actividades por mes o día
                 String query = "SELECT DATE_FORMAT(fecha, '%Y-%m-%d') AS mes, COUNT(*) AS numActividades " +
                         "FROM registroactividades " +

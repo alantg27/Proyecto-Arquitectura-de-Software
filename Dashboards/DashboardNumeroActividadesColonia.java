@@ -57,8 +57,11 @@ public class DashboardNumeroActividadesColonia extends JFrame {
             loadData();
         }
 
+        private Connection conn;
+        
         private void loadData() {
-            try (Connection conn = ConexionDB.getConnection()) {
+            try {
+                conn = ConexionDB.getConnection();
                 // Consulta para obtener el número de actividades por colonia
                 String query = "SELECT c.IdColonia, COUNT(*) AS numActividades " +
                         "FROM registroactividades a " +
