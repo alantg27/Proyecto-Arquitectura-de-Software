@@ -7,13 +7,13 @@ public class ColoniaView extends javax.swing.JFrame {
     initComponents(); // Inicialización generada por el diseñador de NetBeans
     
     // Configuración del placeholder para TXT_ID
-    TXT_ID.setText("No llenar al insertar"); // Texto inicial como placeholder
+    TXT_ID.setText("Sólo para consultas"); // Texto inicial como placeholder
     TXT_ID.setForeground(Color.GRAY); // Color del texto del placeholder
 
     TXT_ID.addFocusListener(new java.awt.event.FocusListener() {
         @Override
         public void focusGained(java.awt.event.FocusEvent e) {
-            if (TXT_ID.getText().equals("No llenar al insertar")) {
+            if (TXT_ID.getText().equals("Sólo para consultas")) {
                 TXT_ID.setText(""); // Borra el placeholder al ganar el foco
                 TXT_ID.setForeground(Color.BLACK); // Cambia el color del texto
             }
@@ -22,7 +22,7 @@ public class ColoniaView extends javax.swing.JFrame {
         @Override
         public void focusLost(java.awt.event.FocusEvent e) {
             if (TXT_ID.getText().isEmpty()) {
-                TXT_ID.setText("No llenar al insertar"); // Restaura el placeholder si el campo está vacío
+                TXT_ID.setText("Sólo para consultas"); // Restaura el placeholder si el campo está vacío
                 TXT_ID.setForeground(Color.GRAY); // Cambia el color del texto al original
             }
         }

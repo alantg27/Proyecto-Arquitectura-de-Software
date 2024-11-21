@@ -130,7 +130,14 @@ public class AdminView extends javax.swing.JFrame {
     }//GEN-LAST:event_BTN_ColoniaActionPerformed
 
     private void BTN_DashboardActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BTN_DashboardActionPerformed
-        // TODO add your handling code here:
+        // Crear una nueva instancia de AdminView
+    MainDashboardFrame vista = new MainDashboardFrame();
+    
+    // Cerrar la ventana actual (ColoniaView)
+    this.dispose();
+    
+    // Mostrar la vista de AdminView
+    vista.setVisible(true);
     }//GEN-LAST:event_BTN_DashboardActionPerformed
 
     /**

@@ -3,12 +3,6 @@ import proyectof.Conn.PersonaConn;
 import java.awt.Color;
 import proyectof.Model.ConexionBD;
 import java.sql.Connection; // Para manejar la conexión con la base de datos
-import java.sql.DriverManager; // Para manejar el registro de los drivers JDBC
-import java.sql.PreparedStatement; // Para ejecutar consultas preparadas
-import java.sql.ResultSet; // Para manejar los resultados de las consultas
-import java.sql.SQLException; // Para manejar excepciones SQL
-import javax.swing.JComboBox; // Para trabajar con el JComboBox
-import java.util.ArrayList; // Si usas ArrayList para manejar listas temporales (si es necesario)
 
 public class PersonaView extends javax.swing.JFrame {
 
@@ -16,13 +10,13 @@ public class PersonaView extends javax.swing.JFrame {
         initComponents(); // Inicialización generada por el diseñador de NetBeans
     
     // Configuración del placeholder para TXT_ID
-    TXT_ID.setText("No llenar al insertar"); // Texto inicial como placeholder
+    TXT_ID.setText("Sólo para consultas"); // Texto inicial como placeholder
     TXT_ID.setForeground(Color.GRAY); // Color del texto del placeholder
 
     TXT_ID.addFocusListener(new java.awt.event.FocusListener() {
         @Override
         public void focusGained(java.awt.event.FocusEvent e) {
-            if (TXT_ID.getText().equals("No llenar al insertar")) {
+            if (TXT_ID.getText().equals("Sólo para consultas")) {
                 TXT_ID.setText(""); // Borra el placeholder al ganar el foco
                 TXT_ID.setForeground(Color.BLACK); // Cambia el color del texto
             }
@@ -31,7 +25,7 @@ public class PersonaView extends javax.swing.JFrame {
         @Override
         public void focusLost(java.awt.event.FocusEvent e) {
             if (TXT_ID.getText().isEmpty()) {
-                TXT_ID.setText("No llenar al insertar"); // Restaura el placeholder si el campo está vacío
+                TXT_ID.setText("Sólo para consultas"); // Restaura el placeholder si el campo está vacío
                 TXT_ID.setForeground(Color.GRAY); // Cambia el color del texto al original
             }
         }
