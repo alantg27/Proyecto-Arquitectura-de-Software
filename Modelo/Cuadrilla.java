@@ -20,6 +20,10 @@ public class Cuadrilla {
         this.id = id;
     }
 
+    public Cuadrilla(int id) {
+    this.id = id;
+}
+    
     public int getId() {
         return id;
     }

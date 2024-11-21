@@ -7,11 +7,11 @@ public class Persona {
     private int edad;
     private String correo;
     private String contraseña;
-    private String rol;
+    private int rol;
     private Integer idCuadrilla; // Cambiado a Integer para permitir valores null
 
     // Constructor para roles (Administrador, Jefe de Cuadrilla, Empleado)
-    public Persona(String nombre, int edad, String correo, String contraseña, String rol, Integer idCuadrilla) {
+    public Persona(String nombre, int edad, String correo, String contraseña, int rol, Integer idCuadrilla) {
         validarEdad(edad);
         validarRol(rol);
         validarCorreo(correo);
@@ -23,6 +23,11 @@ public class Persona {
         this.idCuadrilla = idCuadrilla;
     }
     
+    // Constructor simplificado solo con ID para la creación d cuadrillas
+    public Persona(int id) {
+        this.id = id;
+    }
+    
     // Métodos de validación
     private void validarEdad(int edad) {
         if (edad <= 0) {
@@ -30,8 +35,8 @@ public class Persona {
         }
     }
 
-    private void validarRol(String rol) {
-        if (!rol.equals("admin") && !rol.equals("jefe") && !rol.equals("empleado")) {
+    private void validarRol(int rol) {
+        if (rol!=1 && rol!=2 && rol!=3) {
             throw new IllegalArgumentException("El rol debe ser 'admin', 'jefe' o 'empleado'.");
         }
     }
@@ -85,11 +90,11 @@ public class Persona {
         this.contraseña = contraseña;
     }
 
-    public String getRol() {
+    public int getRol() {
         return rol;
     }
     
-    public void setRol(String rol) {
+    public void setRol(int rol) {
         this.rol = rol;
     }
 

@@ -1,7 +1,6 @@
 package proyectof.Model;
 
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -10,8 +9,8 @@ import java.util.List;
 
 public class ActividadDAO {
 
-    // Método para insertar una nueva actividad
-    public void insertarActividad(Actividad actividad) {
+// Método para insertar una nueva actividad
+public void insertarActividad(Actividad actividad) {
     String sql = "INSERT INTO registroactividades (Descripcion, Fecha, Evidencia, IdCuadrilla, IdColonia) VALUES (?, ?, ?, ?, ?)";
     Connection conexion = null;
     PreparedStatement statement = null;
@@ -20,22 +19,19 @@ public class ActividadDAO {
     try {
         conexion = ConexionBD.conectar(); // Obtén la conexión desde el Singleton
         statement = conexion.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
-        
+
+        // Validar que los valores de IdCuadrilla y IdColonia no sean null
+        if (actividad.getCuadrilla() == null || actividad.getColonia() == null) {
+            throw new IllegalArgumentException("Cuadrilla y Colonia son obligatorios.");
+        }
+
         statement.setString(1, actividad.getDescripcion());
         statement.setDate(2, actividad.getFecha());
         statement.setString(3, actividad.getEvidencia());
 
-        // Obtener el ID de la cuadrilla desde el objeto Cuadrilla
-        int idCuadrilla = actividad.getCuadrilla() != null ? actividad.getCuadrilla().getId() : 0;
-        statement.setInt(4, idCuadrilla);
-
-        // Obtener el ID de la colonia desde el objeto Colonia usando el código postal
-        if (actividad.getColonia() != null) {
-            int idColonia = obtenerIdColoniaPorCodigoPostal(actividad.getColonia().getCodigoPostal());
-            statement.setInt(5, idColonia);
-        } else {
-            statement.setNull(5, java.sql.Types.INTEGER); // Si no hay colonia, establecer como NULL
-        }
+        // Establecer los IDs de cuadrilla y colonia
+        statement.setInt(4, actividad.getCuadrilla().getId());
+        statement.setInt(5, actividad.getColonia().getId());
 
         statement.executeUpdate();
 
@@ -49,49 +45,20 @@ public class ActividadDAO {
 
     } catch (SQLException e) {
         e.printStackTrace();
+    } catch (IllegalArgumentException e) {
+        System.out.println("Error: " + e.getMessage());
     } finally {
-        // Cerrar recursos
+        // No se cierra la conexión
         try {
             if (generatedKeys != null) generatedKeys.close();
             if (statement != null) statement.close();
-            // No cerramos la conexión aquí
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 }
 
-// Método para obtener el ID de la colonia a partir del código postal
-private int obtenerIdColoniaPorCodigoPostal(String codigoPostal) {
-    String sql = "SELECT IdColonia FROM colonias WHERE Codigo_postal = ?";
-    Connection conexion = null;
-    PreparedStatement statement = null;
-    ResultSet resultSet = null;
-    int idColonia = 0;
 
-    try {
-        conexion = ConexionBD.conectar();
-        statement = conexion.prepareStatement(sql);
-        statement.setString(1, codigoPostal);
-        resultSet = statement.executeQuery();
-
-        if (resultSet.next()) {
-            idColonia = resultSet.getInt("IdColonia"); // Obtiene el ID de la colonia
-        }
-
-    } catch (SQLException e) {
-        e.printStackTrace();
-    } finally {
-        try {
-            if (resultSet != null) resultSet.close();
-            if (statement != null) statement.close();
-            // No se cierra la conexión aquí
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-    return idColonia;
-}
 
 
     // Método para obtener una actividad por su ID
@@ -215,46 +182,38 @@ private int obtenerIdColoniaPorCodigoPostal(String codigoPostal) {
         }
     }
 
-    // Método para obtener todas las actividades
-//    public List<Actividad> obtenerTodasLasActividades() {
-//    String sql = "SELECT * FROM registroactividades";
-//    List<Actividad> actividades = new ArrayList<>();
-//    Connection conexion = null;
-//    PreparedStatement statement = null;
-//    ResultSet resultSet = null;
-//    Cuadrilla 
-//
-//    try {
-//        conexion = ConexionBD.conectar(); // Obtén la conexión desde el Singleton
-//        statement = conexion.prepareStatement(sql);
-//        resultSet = statement.executeQuery();
-//        
-//        while (resultSet.next()) {
-//            Actividad actividad = new Actividad(
-//                resultSet.getString("Descripcion"),
-//                resultSet.getDate("Fecha"),
-//                resultSet.getString("Evidencia"),
-//                resultSet.getInt("IdCuadrilla"), // Utiliza el ID de la cuadrilla directamente
-//                resultSet.getInt("IdColonia")    // Utiliza el ID de la colonia directamente
-//            );
-//            actividad.setId(resultSet.getInt("IdActividad")); // Establece el ID
-//            actividades.add(actividad);
-//        }
-//
-//    } catch (SQLException e) {
-//        e.printStackTrace();
-//    } finally {
-//        // Cerrar recursos
-//        try {
-//            if (resultSet != null) resultSet.close();
-//            if (statement != null) statement.close();
-//            // No cerramos la conexión aquí
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//        }
-//    }
-//    return actividades;
-//}
+public List<Integer> obtenerCuadrillasConPersona() {
+    String sql = "SELECT IdCuadrilla FROM cuadrillas WHERE IdPersona IS NOT NULL";
+    Connection conexion = ConexionBD.conectar(); // Obtén la conexión desde el Singleton
+    PreparedStatement statement = null;
+    ResultSet resultSet = null;
+    List<Integer> cuadrillas = new ArrayList<>();
+
+    try {
+        statement = conexion.prepareStatement(sql);
+        resultSet = statement.executeQuery();
+
+        while (resultSet.next()) {
+            cuadrillas.add(resultSet.getInt("IdCuadrilla"));
+        }
+
+    } catch (SQLException e) {
+        e.printStackTrace();
+    } finally {
+        try {
+            if (resultSet != null) resultSet.close();
+            if (statement != null) statement.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        // No cerramos la conexión
+    }
+    return cuadrillas;
+}
+
+
+
+
 
 
 }

@@ -4,52 +4,71 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class PersonaDAO {
 
-    // Método para insertar una nueva persona
-    public void insertarPersona(Persona persona) throws SQLException {
-    String sql = "INSERT INTO personas (Nombre, Edad, Correo, Contraseña, Rol, IdCuadrilla) VALUES (?, ?, ?, ?, ?, ?)";
+    // Método para insertar una nueva persona y actualizar la cuadrilla si es necesario
+public void insertarPersona(Persona persona) throws SQLException {
+    String sqlPersona = "INSERT INTO personas (Nombre, Edad, Correo, Contraseña, IdRol, IdCuadrilla) VALUES (?, ?, ?, ?, ?, ?)";
+    String sqlCuadrilla = "UPDATE cuadrillas SET IdPersona = ? WHERE IdCuadrilla = ?";  // Para actualizar la cuadrilla con el nuevo IdPersona
     Connection conexion = null;
-    PreparedStatement statement = null;
+    PreparedStatement statementPersona = null;
+    PreparedStatement statementCuadrilla = null;
 
     try {
         conexion = ConexionBD.conectar(); // Obtén la conexión desde el Singleton
-        statement = conexion.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
+        statementPersona = conexion.prepareStatement(sqlPersona, PreparedStatement.RETURN_GENERATED_KEYS);
         
-        statement.setString(1, persona.getNombre());
-        statement.setInt(2, persona.getEdad());
-        statement.setString(3, persona.getCorreo());
-        statement.setString(4, persona.getContraseña());
-        statement.setString(5, persona.getRol());
-        statement.setObject(6, persona.getIdCuadrilla()); // Usamos setObject para permitir null
+        statementPersona.setString(1, persona.getNombre());
+        statementPersona.setInt(2, persona.getEdad());
+        statementPersona.setString(3, persona.getCorreo());
+        statementPersona.setString(4, persona.getContraseña());
+        statementPersona.setInt(5, persona.getRol());
+        statementPersona.setObject(6, persona.getIdCuadrilla()); // Usamos setObject para permitir null
 
-        statement.executeUpdate();
+        // Ejecutar la inserción de la persona
+        statementPersona.executeUpdate();
 
         // Obtener el ID generado
-        ResultSet generatedKeys = statement.getGeneratedKeys();
+        ResultSet generatedKeys = statementPersona.getGeneratedKeys();
         if (generatedKeys.next()) {
             persona.setId(generatedKeys.getInt(1)); // Establece el ID en el objeto Persona
         }
 
         System.out.println("Persona insertada exitosamente: " + persona.getNombre());
 
+        // Si el IdCuadrilla no es null y el rol es 2, actualizar la tabla cuadrillas
+        if (persona.getIdCuadrilla() != null && persona.getRol() == 2) {
+            statementCuadrilla = conexion.prepareStatement(sqlCuadrilla);
+            statementCuadrilla.setInt(1, persona.getId()); // Establecer el nuevo IdPersona
+            statementCuadrilla.setInt(2, persona.getIdCuadrilla()); // Filtrar por IdCuadrilla
+            statementCuadrilla.executeUpdate();
+            System.out.println("Cuadrilla actualizada exitosamente.");
+        }
+
     } catch (SQLException e) {
         e.printStackTrace();
         throw new SQLException("Error al insertar persona en la base de datos", e);  // Lanzar la excepción
     } finally {
         // No cerrar la conexión aquí, ya que se utilizará en otro lugar
-        if (statement != null) {
+        if (statementPersona != null) {
             try {
-                statement.close();
+                statementPersona.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        if (statementCuadrilla != null) {
+            try {
+                statementCuadrilla.close();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
         }
     }
 }
+
+
 
 
 
@@ -73,7 +92,7 @@ public class PersonaDAO {
                 resultSet.getInt("Edad"),
                 resultSet.getString("Correo"),
                 resultSet.getString("Contraseña"),
-                resultSet.getString("Rol"),
+                resultSet.getInt("IdRol"),
                 resultSet.getObject("IdCuadrilla", Integer.class) // Obtiene el ID de la cuadrilla (puede ser null)
             );
             persona.setId(id); // Establecemos el ID de la persona
@@ -105,40 +124,60 @@ public class PersonaDAO {
 
 
 
-    // Método para actualizar una persona
-    public void actualizarPersona(Persona persona) {
-        String sql = "UPDATE personas SET Nombre = ?, Edad = ?, Correo = ?, Contraseña = ?, Rol = ?, IdCuadrilla = ? WHERE IdPersona = ?";
-        Connection conexion = null;
-        PreparedStatement statement = null;
+    // Método para actualizar una persona y la cuadrilla correspondiente (solo si el rol es 2)
+public void actualizarPersona(Persona persona) {
+    String sqlPersona = "UPDATE personas SET Nombre = ?, Edad = ?, Correo = ?, Contraseña = ?, IdRol = ?, IdCuadrilla = ? WHERE IdPersona = ?";
+    String sqlCuadrilla = "UPDATE cuadrillas SET IdPersona = ? WHERE IdCuadrilla = ?";  // Para actualizar la cuadrilla con el nuevo IdPersona
+    Connection conexion = null;
+    PreparedStatement statementPersona = null;
+    PreparedStatement statementCuadrilla = null;
 
-        try {
-            conexion = ConexionBD.conectar();
-            statement = conexion.prepareStatement(sql);
-            
-            statement.setString(1, persona.getNombre());
-            statement.setInt(2, persona.getEdad());
-            statement.setString(3, persona.getCorreo());
-            statement.setString(4, persona.getContraseña());
-            statement.setString(5, persona.getRol());
-            statement.setObject(6, persona.getIdCuadrilla()); // Usamos setObject para permitir null
-            statement.setInt(7, persona.getId()); // Usa el ID aquí
+    try {
+        conexion = ConexionBD.conectar();
 
-            statement.executeUpdate();
-            System.out.println("Persona actualizada exitosamente.");
+        // Actualizar la persona
+        statementPersona = conexion.prepareStatement(sqlPersona);
+        statementPersona.setString(1, persona.getNombre());
+        statementPersona.setInt(2, persona.getEdad());
+        statementPersona.setString(3, persona.getCorreo());
+        statementPersona.setString(4, persona.getContraseña());
+        statementPersona.setInt(5, persona.getRol());
+        statementPersona.setObject(6, persona.getIdCuadrilla()); // Usamos setObject para permitir null
+        statementPersona.setInt(7, persona.getId()); // Usa el ID aquí
+        statementPersona.executeUpdate();
+        System.out.println("Persona actualizada exitosamente.");
 
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            // No cerrar la conexión aquí, ya que se utilizará en otro lugar
-            if (statement != null) {
-                try {
-                    statement.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
+        // Si el rol es 2 y la persona tiene un IdCuadrilla, actualizar la cuadrilla con el nuevo IdPersona
+        if (persona.getRol() == 2 && persona.getIdCuadrilla() != null) {
+            statementCuadrilla = conexion.prepareStatement(sqlCuadrilla);
+            statementCuadrilla.setInt(1, persona.getId()); // Establecer el nuevo IdPersona
+            statementCuadrilla.setInt(2, persona.getIdCuadrilla()); // Filtrar por IdCuadrilla
+            statementCuadrilla.executeUpdate();
+            System.out.println("Cuadrilla actualizada exitosamente.");
+        }
+
+    } catch (SQLException e) {
+        e.printStackTrace();
+    } finally {
+        // No cerrar la conexión aquí, ya que se utilizará en otro lugar
+        if (statementPersona != null) {
+            try {
+                statementPersona.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        if (statementCuadrilla != null) {
+            try {
+                statementCuadrilla.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
         }
     }
+}
+
+
 
     // Método para eliminar una persona
     public void eliminarPersona(int id) {

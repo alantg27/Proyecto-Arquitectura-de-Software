@@ -18,6 +18,10 @@ public class Colonia {
         this.codigo_postal = codigo_postal;
     }
 
+    public Colonia(int id) {
+    this.id = id;
+}
+    
     public int getId() {
         return id;
     }

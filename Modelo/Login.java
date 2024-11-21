@@ -6,10 +6,10 @@ import java.sql.SQLException;
 
 public class Login {
     //Variable global estática para almacenar el rol
-    public static String rol; 
+    public static int rol; 
 
     public Object[] validarCredenciales(String correo, String contraseña) {
-        String sql = "SELECT COUNT(*), rol FROM personas WHERE correo = ? AND contraseña = ?";
+        String sql = "SELECT COUNT(*), IdRol FROM personas WHERE correo = ? AND contraseña = ?";
         Connection conexion = null;
         PreparedStatement statement = null;
         ResultSet resultSet = null;
@@ -34,7 +34,7 @@ public class Login {
 
                 if (esValido) {
                     // Si es válido, guarda el rol en la variable global
-                    rol = resultSet.getString("rol");
+                    rol = resultSet.getInt(2);
                 }
             }
 
@@ -65,7 +65,7 @@ public class Login {
     }
 
     // Método para obtener el rol global
-    public static String obtenerRol() {
+    public static int obtenerRol() {
         return rol;
     }
 }

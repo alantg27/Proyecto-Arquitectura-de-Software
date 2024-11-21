@@ -4,8 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class ColoniaDAO {
 
@@ -142,42 +140,4 @@ public class ColoniaDAO {
         }
     }
 
-    // Método para obtener todas las colonias
-    public List<Colonia> obtenerTodasLasColonias() {
-        String sql = "SELECT * FROM colonias";
-        List<Colonia> colonias = new ArrayList<>();
-        Connection conexion = null;
-        PreparedStatement statement = null;
-        ResultSet resultSet = null;
-
-        try {
-            conexion = ConexionBD.conectar(); // Obtén la conexión desde el Singleton
-            statement = conexion.prepareStatement(sql);
-            resultSet = statement.executeQuery();
-
-            while (resultSet.next()) {
-                Colonia colonia = new Colonia(
-                    resultSet.getInt("IdColonia"), // Asegúrate de establecer el ID
-                    resultSet.getString("Nombre"),
-                    resultSet.getString("Codigo_postal")
-                );
-                colonias.add(colonia);
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (resultSet != null) {
-                    resultSet.close();
-                }
-                if (statement != null) {
-                    statement.close();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-        return colonias;
-    }
 }
